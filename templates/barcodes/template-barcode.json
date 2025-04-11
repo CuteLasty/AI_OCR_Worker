@@ -1,0 +1,18 @@
+{
+    "sku_name": "SKU-123456",
+    "rules": [
+        {
+            "type": "contains",
+            "pattern": "123456"
+        },
+        {
+            "type": "contains",
+            "pattern": "產品名稱"
+        },
+        {
+            "type": "startswith",
+            "pattern": "SKU"
+        }
+    ],
+    "description": "這是一個條碼標籤的模板示例。規則包括檢查文字是否包含SKU編號和產品名稱，以及是否以SKU開頭。"
+}

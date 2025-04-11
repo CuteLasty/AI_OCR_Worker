@@ -1,0 +1,36 @@
+{
+    "sku_name": "SKU-123456",
+    "rules": [
+        {
+            "type": "exact",
+            "text": "產品名稱",
+            "position": {
+                "x": 100,
+                "y": 100,
+                "width": 200,
+                "height": 50
+            }
+        },
+        {
+            "type": "contains",
+            "text": "123456",
+            "position": {
+                "x": 100,
+                "y": 200,
+                "width": 200,
+                "height": 50
+            }
+        },
+        {
+            "type": "startswith",
+            "text": "SKU",
+            "position": {
+                "x": 100,
+                "y": 300,
+                "width": 200,
+                "height": 50
+            }
+        }
+    ],
+    "description": "這是一個文字標籤的模板示例。規則包括檢查特定位置的文字是否匹配預期的內容。"
+}
