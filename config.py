@@ -5,9 +5,9 @@ REDIS_DB = 0
 REDIS_QUEUE = 'label_queue'
 
 # 路徑配置
-BACKUP_BASE = 'backups'
+BACKUP_BASE = 'backup'
 RESULT_BASE = 'results'
-TEMPLATE_DIR = 'templates'
+TEMPLATE_DIR = 'template'
 YOLO_MODEL_PATH = 'best.pt'
 
 # OCR配置

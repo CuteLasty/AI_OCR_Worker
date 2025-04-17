@@ -41,6 +41,6 @@ label-processor/
             ├── pp_image.jpg   # 預處理圖像
             ├── text_image.jpg # 帶OCR可視化的圖像
             ├── tag_image.jpg  # 帶分析可視化的圖像
-            ├── ocr_results.json # OCR結果
-            └── analysis_results.json # 分析結果
+            ├── ocr_results_image.json # OCR結果
+            └── analysis_results_image.json # 分析結果
 ```
