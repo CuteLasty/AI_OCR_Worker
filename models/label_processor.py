@@ -6,8 +6,11 @@ from loguru import logger
 
 from .ocr_model import OCRModel
 from .yolo_model import YoloModel
-from analyzers.barcode_analyzer import BarcodeAnalyzer
-from analyzers.text_analyzer import TextAnalyzer
+# from analyzers.barcode_analyzer import BarcodeAnalyzer
+# from analyzers.text_analyzer import TextAnalyzer
+
+from analyzers.label_analyzer_factory import LabelAnalyzerFactory
+
 from utils.file_utils import ensure_dir, get_timestamp_dir, backup_file
 from utils.image_utils import crop_image, preprocess_image, draw_analysis_results
 from templates.label_templates import TemplateManager
@@ -81,8 +84,9 @@ class LabelProcessor:
             )
 
             # 初始化分析器
-            self.barcode_analyzer = BarcodeAnalyzer()
-            self.text_analyzer = TextAnalyzer()
+            # self.barcode_analyzer = BarcodeAnalyzer()
+            # self.text_analyzer = TextAnalyzer()
+            self.analyzer_factory = LabelAnalyzerFactory()
             self.template_manager = TemplateManager()
             self.visualizer = Visualizer()
 
@@ -158,6 +162,10 @@ class LabelProcessor:
                 analysis_results = self._analyze_text(ocr_results, data)
             else:
                 raise ValueError(f"不支持的標籤類型: {label_type}")
+
+            analyzer = self.analyzer_factory.create_analyzer(
+                data['type'], sku_name)
+            analysis_results = analyzer.analyze(ocr_results)
 
             result['analysis_results'] = analysis_results
 
@@ -386,12 +394,12 @@ class LabelProcessor:
         # 獲取模板
         template = self.template_manager.find_barcode_label_template(
             sku_name)
-        # template = self._get_template('barcode', sku_name)
-        # if not template:
-        #    return {
-        #        'match': False,
-        #        'errors': [f"未找到SKU {sku_name} 的條碼模板"]
-        #    }
+        # - template = self._get_template('barcode', sku_name)
+        # - if not template:
+        # -    return {
+        # -        'match': False,
+        # -        'errors': [f"未找到SKU {sku_name} 的條碼模板"]
+        # -    }
 
         # 使用條碼分析器分析
         return self.barcode_analyzer.analyze(ocr_results, template)
