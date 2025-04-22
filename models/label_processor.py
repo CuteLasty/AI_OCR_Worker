@@ -113,6 +113,7 @@ class LabelProcessor:
             image_path = data['image_path']
             timestamp = data['timestamp']
             label_type = data['type'].lower()  # 轉換為小寫以處理大小寫不一致
+            sku_name = data['sku_name']
 
             logger.info(f"開始處理 {image_path}, 類型: {label_type}")
 
@@ -154,18 +155,12 @@ class LabelProcessor:
             result['ocr_image_path'] = ocr_image_path
 
             # 6. 根據類型分析
-            if label_type == 'barcode':
-                analysis_results = self._analyze_barcode(ocr_results, data)
-            elif label_type == 'text':
-                data['image_width'], data['image_height'] = self._calculate_bounding_box_dimensions(
-                    largest_box)
-                analysis_results = self._analyze_text(ocr_results, data)
-            else:
-                raise ValueError(f"不支持的標籤類型: {label_type}")
-
+            image_width, image_height = self._calculate_bounding_box_dimensions(
+                largest_box)
             analyzer = self.analyzer_factory.create_analyzer(
                 data['type'], sku_name)
-            analysis_results = analyzer.analyze(ocr_results)
+            analysis_results = analyzer.analyze(
+                ocr_results, image_width, image_height)
 
             result['analysis_results'] = analysis_results
 
@@ -366,76 +361,6 @@ class LabelProcessor:
             logger.error(f"讀取模板 {template_path} 失敗: {e}")
             return None
 
-    def _analyze_barcode(self, ocr_results, data):
-        """
-        分析條碼標籤
-
-        Args:
-            ocr_results (list): OCR結果
-            data (dict): 任務數據
-
-        Returns:
-            dict: 分析結果
-        """
-        # 首先，從OCR結果中找到sku_name
-        # 這裡我們假設第一個OCR結果包含SKU名稱
-        sku_name = None
-        if data:
-            # 可以根據特定規則或格式來查找SKU名稱
-            # 這裡簡化為使用第一個OCR結果
-            sku_name = data['sku_name']
-
-        if not sku_name:
-            return {
-                'match': False,
-                'errors': ["未能從data中確定SKU名稱"]
-            }
-
-        # 獲取模板
-        template = self.template_manager.find_barcode_label_template(
-            sku_name)
-        # - template = self._get_template('barcode', sku_name)
-        # - if not template:
-        # -    return {
-        # -        'match': False,
-        # -        'errors': [f"未找到SKU {sku_name} 的條碼模板"]
-        # -    }
-
-        # 使用條碼分析器分析
-        return self.barcode_analyzer.analyze(ocr_results, template)
-
-    def _analyze_text(self, ocr_results, data):
-        """
-        分析文字標籤
-
-        Args:
-            ocr_results (list): OCR結果
-            data (dict): 任務數據
-
-        Returns:
-            dict: 分析結果
-        """
-        # 從數據中獲取SKU名稱
-        sku_name = data.get('sku_name')
-        if not sku_name:
-            return {
-                'match': False,
-                'errors': ["數據中缺少SKU名稱"]
-            }
-
-        # 獲取模板
-        template = self.template_manager.find_text_label_template(
-            sku_name)
-        # template = self._get_template('text', sku_name)
-        # if not template:
-        #    return {
-        #        'match': False,
-        #        'errors': [f"未找到SKU {sku_name} 的文字模板"]
-        #    }
-
-        # 使用文字分析器分析
-        return self.text_analyzer.analyze(data, ocr_results, template)
-
     def _visualize_analysis(self, analysis_results, raw_image_path, timestamp):
         """
         可視化分析結果
@@ -461,8 +386,13 @@ class LabelProcessor:
 
         # 創建分析可視化
         # draw_analysis_results(raw_image_path, analysis_results, analysis_image_path)
-        self.visualizer.draw_analysis_results(
-            raw_image_path, analysis_results, analysis_image_path)
+        draw_type = analysis_results['type']
+        if draw_type == 'barcode':
+            self.visualizer.draw_analysis_results_barcode(
+                raw_image_path, analysis_results, analysis_image_path)
+        elif draw_type == 'text':
+            self.visualizer.draw_analysis_results_text(
+                raw_image_path, analysis_results, analysis_image_path)
 
         return analysis_image_path
 

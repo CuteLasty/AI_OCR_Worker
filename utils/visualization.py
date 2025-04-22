@@ -148,6 +148,126 @@ class Visualizer:
             self.logger.error(f"Error drawing analysis results: {str(e)}")
             raise
 
+    def draw_analysis_results_barcode(self, image_path, analysis_results, output_path):
+        """
+        Draw analysis results on image (highlighting differences)
+
+        Args:
+            image: Image to draw on
+            analysis_results: Analysis results with differences
+
+        Returns:
+            Image with visualizations
+        """
+        try:
+            # 讀取圖像
+            img = cv2.imread(image_path)
+            if img is None:
+                raise ValueError(f"讀取圖像失敗: {image_path}")
+
+            # 創建副本
+            result = img.copy()
+
+            for item in analysis_results.get('results', []):
+                # Get bounding box
+                bbox = np.array(item['bbox'], dtype=np.int32)
+
+                # Get text and metrics
+                text = item.get('text', '')
+                is_pass = item.get('pass', False)
+
+                # Draw bounding box with color based on match quality
+                if is_pass:
+                    # Perfect match or special text (green)
+                    box_color = self.colors['equal']
+                else:
+                    # Major differences (red)
+                    box_color = self.colors['error']
+
+                cv2.polylines(result, [bbox], True, box_color, 2)
+
+                # Draw text near top-left corner
+                text_pos = (int(bbox[0][0]), int(bbox[0][1]) - 10)
+                # cv2.putText(image, text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, self.fontScale, self.colors['text'], 1)
+                self.text_drawer.putText(
+                    result, text, text_pos, "simsun.ttc", self.fontScale, self.colors['text'], 1)
+
+                # For non-special text with differences, draw detailed diff information
+                if not is_pass:
+                    self._draw_text_differences(result, item)
+
+            # 保存結果
+            cv2.imwrite(output_path, result)
+            self.logger.info(f"分析可視化保存至 {output_path}")
+
+            return output_path
+
+        except Exception as e:
+            self.logger.error(f"Error drawing analysis results: {str(e)}")
+            raise
+
+    def draw_analysis_results_text(self, image_path, analysis_results, output_path):
+        """
+        Draw analysis results on image (highlighting differences)
+
+        Args:
+            image: Image to draw on
+            analysis_results: Analysis results with differences
+
+        Returns:
+            Image with visualizations
+        """
+        try:
+            # 讀取圖像
+            img = cv2.imread(image_path)
+            if img is None:
+                raise ValueError(f"讀取圖像失敗: {image_path}")
+
+            # 創建副本
+            result = img.copy()
+
+            for item in analysis_results.get('results', []):
+                # Get bounding box
+                bbox = np.array(item['bbox'], dtype=np.int32)
+
+                # Get text and metrics
+                text = item['text']
+                is_special = item.get('is_special', False)
+                distance = item.get('distance', 0)
+
+                # Draw bounding box with color based on match quality
+                if is_special or distance == 0:
+                    # Perfect match or special text (green)
+                    box_color = self.colors['equal']
+                elif distance < 3:
+                    # Minor differences (orange)
+                    box_color = self.colors['replace']
+                else:
+                    # Major differences (red)
+                    box_color = self.colors['error']
+
+                cv2.polylines(result, [bbox], True, box_color, 2)
+
+                # Draw text near top-left corner
+                text_pos = (int(bbox[0][0]), int(bbox[0][1]) - 10)
+                # cv2.putText(image, text, text_pos, cv2.FONT_HERSHEY_SIMPLEX, self.fontScale, self.colors['text'], 1)
+                self.text_drawer.putText(
+                    result, text, text_pos, "simsun.ttc", self.fontScale, self.colors['text'], 1)
+
+                # For non-special text with differences, draw detailed diff information
+                if not is_special and distance > 0 and 'opcodes' in item:
+                    self._draw_text_differences(result, item)
+
+            # 保存結果
+            cv2.imwrite(output_path, result)
+            self.logger.info(f"分析可視化保存至 {output_path}")
+
+            return output_path
+
+        except Exception as e:
+            self.logger.error(f"Error drawing analysis results: {str(e)}")
+            raise
+
     def _draw_text_differences(self, image, analysis_item):
         """
         Draw detailed text differences on image

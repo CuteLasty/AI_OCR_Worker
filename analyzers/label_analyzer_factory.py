@@ -23,6 +23,7 @@ class LabelAnalyzerFactory:
     Factory class to create the appropriate label analyzer based on SKU name.
     Uses a class registration pattern to avoid creating unnecessary instances.
     """
+
     def __init__(self):
         """
         Initialize the factory and register all available analyzers.
@@ -32,14 +33,14 @@ class LabelAnalyzerFactory:
             'barcode': [],
             'text': []
         }
-        
+
         # Register all analyzers upon initialization
         self._register_all()
-    
+
     def _register(self, analyzer_class, analyzer_type='barcode'):
         """
         Register an analyzer class with its SKU pattern.
-        
+
         Args:
             analyzer_class: The analyzer class to register
             analyzer_type: The type of analyzer ('barcode' or 'text')
@@ -47,8 +48,9 @@ class LabelAnalyzerFactory:
         # Create a temporary instance and add it to registry if it has sku_name
         instance = analyzer_class()
         if hasattr(instance, 'sku_name'):
-            self._registry[analyzer_type].append((instance.sku_name, analyzer_class))
-    
+            self._registry[analyzer_type].append(
+                (instance.sku_name, analyzer_class))
+
     def _register_all(self):
         """
         Register all available analyzer classes.
@@ -144,18 +146,18 @@ class LabelAnalyzerFactory:
         # Ensure we have classes registered for the requested type
         if type not in self._registry:
             return None
-            
+
         # Check if the SKU name matches any of the registered patterns
         for patterns, analyzer_class in self._registry[type]:
             # Check if sku_name matches any pattern in the analyzer's sku_name list
             for pattern_list in patterns:
                 # Check if pattern_list is a list/tuple and if sku_name matches any element
-                if isinstance(pattern_list, (list, tuple)) and any(sku_name in pattern for pattern in pattern_list):
+                if isinstance(pattern_list, (list, tuple)) and sku_name in pattern_list:
                     return analyzer_class()
                 # Or check if sku_name is in the pattern directly
                 elif sku_name in pattern_list:
                     return analyzer_class()
-                
+
         # No match found
         return None
 

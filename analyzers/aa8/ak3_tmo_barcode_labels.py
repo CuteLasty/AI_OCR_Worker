@@ -1,4 +1,10 @@
+from loguru import logger
+
+from utils.text_utils import TextMatcher
 from analyzers.base_label_analyzer import BaseLabelAnalyzer
+from analyzers.utils import create_analyze_result
+from analyzers.aa8.date_str_utils import generate_MMDDYYYY
+from analyzers.aa8.analyzer_utils import *
 
 
 class AK3_US_TMO_CL1_128G_Retail_Label(BaseLabelAnalyzer):
@@ -8,67 +14,66 @@ class AK3_US_TMO_CL1_128G_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05564-US", "840244707750"],
         ]
-        self.static_string = [
-            "Pixel 8a",
-            "Obsidian",
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
-        """
-        T-Mobile 特有的標籤分析方法
+    def analyze(self, ocr_results, image_width, image_height):
+        # Implementation for specific analysis
+        try:
+            logger.info("分析條碼OCR結果")
 
-        Args:
-            ocr_result: OCR 文本結果
+            # 初始化結果
+            analysis = initialize_analysis()
 
-        Returns:
-            字典，包含匹配分數和提取的數據
-        """
-        # 首先調用基類的分析方法獲取基本結果
-        base_result = super().analyze(ocr_result)
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
 
-        if not ocr_result:
-            return base_result
+            text_matcher = TextMatcher()
 
-        ocr_text = ocr_result.lower()
+            static_strings = [
+                "Pixel 8a",
+                "Obsidian",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
 
-        # 檢查 T-Mobile 特有的標記
-        if "tmo" in ocr_text or "t-mobile" in ocr_text:
-            base_result["match_score"] += 5
-            base_result["extracted_data"]["carrier"] = "T-Mobile"
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
 
-        # 尋找 T-Mobile 特有的 UPC 條碼格式
-        # T-Mobile 通常使用 UPC 而不是 SKU
-        if "upc" in ocr_text:
-            try:
-                index = ocr_text.index("upc")
-                end_index = ocr_text.find('\n', index)
-                if end_index == -1:
-                    end_index = len(ocr_text)
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
 
-                upc = ocr_text[index + len("upc"):end_index].strip(": ")
-                if upc and upc.isdigit() and len(upc) >= 12:  # UPC 通常是 12 位數
-                    base_result["extracted_data"]["UPC"] = upc
-            except:
-                pass
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
 
-        # 檢查 5G Sub-6 特有描述
-        if "5g sub-6" in ocr_text:
-            base_result["match_score"] += 2
-            base_result["extracted_data"]["network"] = "5G Sub-6"
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
 
-        return base_result
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL1_128G_Demo_Retail_Label(BaseLabelAnalyzer):
@@ -78,26 +83,66 @@ class AK3_US_TMO_CL1_128G_Demo_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05696-US", "840244710811"],
         ]
-        self.static_string = [
-            "Pixel 8a DEMO",
-            "Obsidian",
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a DEMO",
+                "Obsidian",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL2_Retail_Label(BaseLabelAnalyzer):
@@ -107,26 +152,66 @@ class AK3_US_TMO_CL2_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05565-US", "840244707767"],
         ]
-        self.static_string = [
-            "Pixel 8a",
-            "Porcelain",
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a",
+                "Porcelain",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL3_Retail_Label(BaseLabelAnalyzer):
@@ -136,26 +221,66 @@ class AK3_US_TMO_CL3_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05566-US", "840244707774"],
         ]
-        self.static_string = [
-            "Pixel 8a",
-            "Bay",
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a",
+                "Bay",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL3_Demo_Retail_Label(BaseLabelAnalyzer):
@@ -165,26 +290,66 @@ class AK3_US_TMO_CL3_Demo_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05697-US", "840244710804"],
         ]
-        self.static_string = [
-            "Pixel 8a DEMO",
-            "Bay"
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a DEMO",
+                "Bay",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL4_Retail_Label(BaseLabelAnalyzer):
@@ -194,26 +359,66 @@ class AK3_US_TMO_CL4_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05591-US", "840244708252"],
         ]
-        self.static_string = [
-            "Pixel 8a",
-            "Aloe",
-            "5G Sub-6* | 128 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a",
+                "Aloe",
+                "5G Sub-6* | 128 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_TMO_CL1_256G_Retail_Label(BaseLabelAnalyzer):
@@ -223,23 +428,63 @@ class AK3_US_TMO_CL1_256G_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA05581-US", "840244707781"],
         ]
-        self.static_string = [
-            "Pixel 8a",
-            "Obsidian",
-            "5G Sub-6* | 256 GB**",
-            "Phone made in Vietnam",
-            "Accessories made in China",
-        ]
-        self.starting_string = [
-            "SW",
-            "HW",
-            "IMEI1",
-            "IMEI2",
-            "TMO SKU",
-            "EID",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 8a",
+                "Obsidian",
+                "5G Sub-6* | 256 GB**",
+                "Phone made in Vietnam",
+                "Accessories made in China",
+            ]
+
+            starting_string = [
+                "S/W",
+                "H/W",
+                "IMEI1",
+                "IMEI2",
+                "TMO SKU",
+                "EID",
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.7)
+            # date_str_y = int(image_height/2)
+            date_str_y = 0
+            date_str_MMDDYYYY = generate_MMDDYYYY()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_MMDDYYYY, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise

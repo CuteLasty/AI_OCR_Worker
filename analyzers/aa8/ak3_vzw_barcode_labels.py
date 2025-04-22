@@ -1,5 +1,10 @@
+from loguru import logger
+
+from utils.text_utils import TextMatcher
 from analyzers.base_label_analyzer import BaseLabelAnalyzer
-# from analyze_utils import get_base_score, extract_specific_field, has_any_keyword
+from analyzers.utils import create_analyze_result
+from analyzers.aa8.date_str_utils import generate_YMDD
+from analyzers.aa8.analyzer_utils import *
 
 
 class AK3_US_VZW_CL1_Retail_Label(BaseLabelAnalyzer):
@@ -13,55 +18,62 @@ class AK3_US_VZW_CL1_Retail_Label(BaseLabelAnalyzer):
             ["IQGA05578-US", "840244708207"],
             ["IQGA05696-US", "840244711368 "],
         ]
-        self.static_string = [
-            "Obsidian",
-        ]
-        self.starting_string = [
-            "SKU",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "SN",
-            "Software Version",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
-        """
-        Verizon 特有的標籤分析方法
+    def analyze(self, ocr_results, image_width, image_height):
+        # Implementation for specific analysis
+        try:
+            logger.info("分析條碼OCR結果")
 
-        Args:
-            ocr_result: OCR 文本結果
+            # 初始化結果
+            analysis = initialize_analysis()
 
-        Returns:
-            字典，包含匹配分數和提取的數據
-        """
-        if not ocr_result:
-            return {"match_score": 0, "extracted_data": {}}
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
 
-        ocr_text = ocr_result.lower()
+            text_matcher = TextMatcher()
 
-        # 使用工具類獲取基本分數和提取的數據
-        result = get_base_score(
-            ocr_text,
-            self.sku_name,
-            self.static_string,
-            self.starting_string,
-            self.ignore_string
-        )
+            static_strings = [
+                "Obsidian"
+            ]
 
-        # 檢查 Verizon 特有的標記
-        if has_any_keyword(ocr_text, ["vzw", "verizon"]):
-            result["match_score"] += 5
-            result["extracted_data"]["carrier"] = "Verizon"
+            starting_string = [
+                "SKU",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "SN",
+                "Software Version",
+            ]
 
-        # 尋找 Verizon 特有的軟件版本格式
-        software_version = extract_specific_field(
-            ocr_text, "software version", ":", ["\n"])
-        if software_version:
-            result["extracted_data"]["Software Version"] = software_version
+            # 處理固定字串
+            ocr_results_copy1 = process_static_strings(
+                ocr_results, static_strings, analysis)
 
-        return result
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            # date_str_y = int(image_height*0.4)  # fix: add a check callback for process_date_str()
+            date_str_y = 0
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy2 = process_date_str(
+                ocr_results_copy1, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_VZW_CL2_Retail_Label(BaseLabelAnalyzer):
@@ -74,60 +86,62 @@ class AK3_US_VZW_CL2_Retail_Label(BaseLabelAnalyzer):
             ["IQGA05562-US", "840244708184"],
             ["IQGA05579-US", "840244708214"],
         ]
-        self.static_string = [
-            "Porcelain",
-        ]
-        self.starting_string = [
-            "SKU",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "SN",
-            "Software Version",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
-        """
-        Verizon Porcelain 標籤分析方法
+    def analyze(self, ocr_results, image_width, image_height):
+        # Implementation for specific analysis
+        try:
+            logger.info("分析條碼OCR結果")
 
-        Args:
-            ocr_result: OCR 文本結果
+            # 初始化結果
+            analysis = initialize_analysis()
 
-        Returns:
-            字典，包含匹配分數和提取的數據
-        """
-        if not ocr_result:
-            return {"match_score": 0, "extracted_data": {}}
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
 
-        ocr_text = ocr_result.lower()
+            text_matcher = TextMatcher()
 
-        # 使用工具類獲取基本分數和提取的數據
-        result = get_base_score(
-            ocr_text,
-            self.sku_name,
-            self.static_string,
-            self.starting_string,
-            self.ignore_string
-        )
+            static_strings = [
+                "Porcelain"
+            ]
 
-        # 檢查 Verizon 特有的標記
-        if has_any_keyword(ocr_text, ["vzw", "verizon"]):
-            result["match_score"] += 5
-            result["extracted_data"]["carrier"] = "Verizon"
+            starting_string = [
+                "SKU",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "SN",
+                "Software Version",
+            ]
 
-        # 檢查是否為 Porcelain 顏色
-        if "porcelain" in ocr_text:
-            result["match_score"] += 3
-            result["extracted_data"]["color"] = "Porcelain"
+            # 處理固定字串
+            ocr_results_copy1 = process_static_strings(
+                ocr_results, static_strings, analysis)
 
-        # 尋找 Verizon 特有的軟件版本格式
-        software_version = extract_specific_field(
-            ocr_text, "software version", ":", ["\n"])
-        if software_version:
-            result["extracted_data"]["Software Version"] = software_version
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            # date_str_y = int(image_height*0.4)  # fix: add a check callback for process_date_str()
+            date_str_y = 0
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy2 = process_date_str(
+                ocr_results_copy1, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
 
-        return result
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_VZW_CL3_Retail_Label(BaseLabelAnalyzer):
@@ -141,60 +155,62 @@ class AK3_US_VZW_CL3_Retail_Label(BaseLabelAnalyzer):
             ["IQGA05580-US", "840244708221"],
             ["IQGA05697-US", "840244711375"],
         ]
-        self.static_string = [
-            "Bay",
-        ]
-        self.starting_string = [
-            "SKU",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "SN",
-            "Software Version",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
-        """
-        Verizon Bay 標籤分析方法
+    def analyze(self, ocr_results, image_width, image_height):
+        # Implementation for specific analysis
+        try:
+            logger.info("分析條碼OCR結果")
 
-        Args:
-            ocr_result: OCR 文本結果
+            # 初始化結果
+            analysis = initialize_analysis()
 
-        Returns:
-            字典，包含匹配分數和提取的數據
-        """
-        if not ocr_result:
-            return {"match_score": 0, "extracted_data": {}}
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
 
-        ocr_text = ocr_result.lower()
+            text_matcher = TextMatcher()
 
-        # 使用工具類獲取基本分數和提取的數據
-        result = get_base_score(
-            ocr_text,
-            self.sku_name,
-            self.static_string,
-            self.starting_string,
-            self.ignore_string
-        )
+            static_strings = [
+                "Bay"
+            ]
 
-        # 檢查 Verizon 特有的標記
-        if has_any_keyword(ocr_text, ["vzw", "verizon"]):
-            result["match_score"] += 5
-            result["extracted_data"]["carrier"] = "Verizon"
+            starting_string = [
+                "SKU",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "SN",
+                "Software Version",
+            ]
 
-        # 檢查是否為 Bay 顏色
-        if "bay" in ocr_text:
-            result["match_score"] += 3
-            result["extracted_data"]["color"] = "Bay"
+            # 處理固定字串
+            ocr_results_copy1 = process_static_strings(
+                ocr_results, static_strings, analysis)
 
-        # 尋找 Verizon 特有的軟件版本格式
-        software_version = extract_specific_field(
-            ocr_text, "software version", ":", ["\n"])
-        if software_version:
-            result["extracted_data"]["Software Version"] = software_version
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            # date_str_y = int(image_height*0.4)  # fix: add a check callback for process_date_str()
+            date_str_y = 0
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy2 = process_date_str(
+                ocr_results_copy1, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
 
-        return result
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_string, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class AK3_US_VZW_CL4_Retail_Label(BaseLabelAnalyzer):
@@ -220,44 +236,5 @@ class AK3_US_VZW_CL4_Retail_Label(BaseLabelAnalyzer):
         ]
         self.ignore_string = []
 
-    def analyze(self, ocr_result):
-        """
-        Verizon Aloe 標籤分析方法
-
-        Args:
-            ocr_result: OCR 文本結果
-
-        Returns:
-            字典，包含匹配分數和提取的數據
-        """
-        if not ocr_result:
-            return {"match_score": 0, "extracted_data": {}}
-
-        ocr_text = ocr_result.lower()
-
-        # 使用工具類獲取基本分數和提取的數據
-        result = get_base_score(
-            ocr_text,
-            self.sku_name,
-            self.static_string,
-            self.starting_string,
-            self.ignore_string
-        )
-
-        # 檢查 Verizon 特有的標記
-        if has_any_keyword(ocr_text, ["vzw", "verizon"]):
-            result["match_score"] += 5
-            result["extracted_data"]["carrier"] = "Verizon"
-
-        # 檢查是否為 Aloe 顏色
-        if "aloe" in ocr_text:
-            result["match_score"] += 3
-            result["extracted_data"]["color"] = "Aloe"
-
-        # 尋找 Verizon 特有的軟件版本格式
-        software_version = extract_specific_field(
-            ocr_text, "software version", ":", ["\n"])
-        if software_version:
-            result["extracted_data"]["Software Version"] = software_version
-
-        return result
+    def analyze(self, ocr_results, image_width, image_height):
+        pass

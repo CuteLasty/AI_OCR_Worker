@@ -38,7 +38,68 @@ def crop_image(image_path, bbox, output_path):
         raise
 
 
-def preprocess_image(image_path, output_path):
+def preprocess_image(image_path, output_path, method='otsu'):
+    """
+    預處理OCR的圖像
+
+    Args:
+        image_path (str): 圖像路徑
+        output_path (str): 保存預處理圖像的路徑
+
+    Returns:
+        str: 預處理圖像的路徑
+    """
+    try:
+        # 讀取圖像
+        img = cv2.imread(image_path)
+        if img is None:
+            raise ValueError(f"讀取圖像失敗: {image_path}")
+
+        # 轉換為灰度
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        if method == 'otsu':
+            # Otsu's thresholding
+            _, result = cv2.threshold(
+                gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        elif method == 'adaptive':
+            # Adaptive thresholding for images with uneven lighting
+            result = cv2.adaptiveThreshold(
+                gray,
+                255,
+                cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY,
+                11,  # Block size
+                2    # Constant subtracted from mean
+            )
+        else:
+            # 應用高斯模糊
+            blur = cv2.GaussianBlur(gray, (5, 5), 0)
+
+            # 應用自適應閾值處理
+            thresh = cv2.adaptiveThreshold(
+                blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY_INV, 11, 2
+            )
+
+            # 應用形態學操作
+            kernel = np.ones((3, 3), np.uint8)
+            opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+
+            # 反轉回黑色文字在白色背景上
+            result = cv2.bitwise_not(opening)
+
+            # 保存預處理圖像
+        cv2.imwrite(output_path, result)
+        logger.info(f"預處理圖像保存至 {output_path}")
+        return output_path
+
+    except Exception as e:
+        logger.error(f"預處理圖像時出錯: {e}")
+        raise
+
+
+def preprocess_image_(image_path, output_path):
     """
     預處理OCR的圖像
 

@@ -1,4 +1,10 @@
+from loguru import logger
+
+from utils.text_utils import TextMatcher
 from analyzers.base_label_analyzer import BaseLabelAnalyzer
+from analyzers.utils import create_analyze_result
+from analyzers.aa8.date_str_utils import generate_YMDD
+from analyzers.aa8.analyzer_utils import *
 
 
 class TG4_CLR1_128_ATT_Retail_Label(BaseLabelAnalyzer):
@@ -8,21 +14,60 @@ class TG4_CLR1_128_ATT_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA09568-US", "840353921818", "6792E"]
         ]
-        self.static_string = [
-            "Pixel 9a | 128 GB** | Obsidian",
-        ]
-        self.starting_string = [
-            "OS ver.: Android 15 | S/W: RD1A.200810.022.A4 | H/W: MP1.0",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "AT&T SKU",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 9a | 128 GB** | Obsidian",
+            ]
+
+            starting_strings = [
+                "OS ver",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "AT&T SKU"
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            date_str_y = int(image_height*0.5)
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_strings, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class TG4_CLR2_128_ATT_Retail_Label(BaseLabelAnalyzer):
@@ -30,21 +75,60 @@ class TG4_CLR2_128_ATT_Retail_Label(BaseLabelAnalyzer):
         super().__init__()
         self.project = "TG4"
         self.sku_name = []
-        self.static_string = [
-            "Pixel 9a | 128GB** | Porcelain",
-        ]
-        self.starting_string = [
-            "OS ver.: Android 15 | S/W: RD1A.200810.022.A4 | H/W: MP1.0",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "AT&T SKU",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 9a | 128 GB** | Porcelain",
+            ]
+
+            starting_strings = [
+                "OS ver",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "AT&T SKU"
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            date_str_y = int(image_height*0.5)
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_strings, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class TG4_CLR3_128_ATT_Retail_Label(BaseLabelAnalyzer):
@@ -52,21 +136,60 @@ class TG4_CLR3_128_ATT_Retail_Label(BaseLabelAnalyzer):
         super().__init__()
         self.project = "TG4"
         self.sku_name = []
-        self.static_string = [
-            "Pixel 9a | 128GB** | Iris",
-        ]
-        self.starting_string = [
-            "OS ver.: Android 15 | S/W: RD1A.200810.022.A4 | H/W: MP1.0",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "AT&T SKU",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "Pixel 9a | 128 GB** | Iris",
+            ]
+
+            starting_strings = [
+                "OS ver",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "AT&T SKU"
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            date_str_y = int(image_height*0.5)
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_strings, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class TG4_DEMO_CLR1_128_ATT_Retail_Label(BaseLabelAnalyzer):
@@ -76,21 +199,60 @@ class TG4_DEMO_CLR1_128_ATT_Retail_Label(BaseLabelAnalyzer):
         self.sku_name = [
             ["GA09818-US", "840353921870", "D792E"]
         ]
-        self.static_string = [
-            "DEMO Pixel 9a | 128GB** | Obsidian",
-        ]
-        self.starting_string = [
-            "OS ver.: Android",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "AT&T SKU",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "DEMO Pixel 9a | 128 GB** | Obsidian",
+            ]
+
+            starting_strings = [
+                "OS ver",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "AT&T SKU"
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            date_str_y = int(image_height*0.5)
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_strings, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise
 
 
 class TG4_DEMO_CLR3_128_ATT_Retail_Label(BaseLabelAnalyzer):
@@ -98,18 +260,57 @@ class TG4_DEMO_CLR3_128_ATT_Retail_Label(BaseLabelAnalyzer):
         super().__init__()
         self.project = "TG4"
         self.sku_name = []
-        self.static_string = [
-            "DEMO Pixel 9a | 128GB** | Iris",
-        ]
-        self.starting_string = [
-            "OS ver.: Android 15 | S/W: RD1A.200810.022.A4 | H/W: MP1.0",
-            "EID",
-            "IMEI1",
-            "IMEI2",
-            "AT&T SKU",
-        ]
-        self.ignore_string = []
 
-    def analyze(self, ocr_result):
+    def analyze(self, ocr_results, image_width, image_height):
         # Implementation for specific analysis
-        pass
+        try:
+            logger.info("分析條碼OCR結果")
+
+            # 初始化結果
+            analysis = initialize_analysis()
+
+            # 檢查空結果
+            if not ocr_results:
+                analysis['errors'].append("未找到OCR結果")
+                return analysis
+
+            text_matcher = TextMatcher()
+
+            static_strings = [
+                "DEMO Pixel 9a | 128 GB** | Iris",
+            ]
+
+            starting_strings = [
+                "OS ver",
+                "EID",
+                "IMEI1",
+                "IMEI2",
+                "AT&T SKU"
+            ]
+
+            # 處理YMDD日期標籤
+            date_str_x = int(image_width*0.8)
+            date_str_y = int(image_height*0.5)
+            date_str_YMDD = generate_YMDD()
+            ocr_results_copy = process_date_str(
+                ocr_results, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+
+            # 處理固定字串
+            ocr_results_copy2 = process_static_strings(
+                ocr_results_copy, static_strings, analysis)
+
+            # 處理開頭字串和數字
+            remaining_results = process_starting_strings_and_digits(
+                ocr_results_copy2, starting_strings, text_matcher, analysis)
+
+            # 如果需要進一步處理剩餘結果，可以在這裡添加
+
+            # 確定整體匹配
+            # analysis['match'] = all(result['match'] for result in analysis['results'])
+            # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
+
+            return analysis
+
+        except Exception as e:
+            logger.error(f"條碼分析過程中出錯: {e}")
+            raise

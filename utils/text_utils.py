@@ -6,6 +6,7 @@ import logging
 import difflib
 import Levenshtein
 
+
 class TextMatcher:
     """Text matching and comparison utilities"""
 
@@ -35,14 +36,12 @@ class TextMatcher:
 
         # Find closest matching template text
         for index, template in enumerate(template_texts):
-            if template == "#####":  # Skip separator markers
-                continue
-
             # Normalize template text
             normalized_template = self.normalize_text(template)
 
             # Calculate Levenshtein distance
-            distance = Levenshtein.distance(normalized_ocr, normalized_template)
+            distance = Levenshtein.distance(
+                normalized_ocr, normalized_template)
 
             # Update minimum if this is better
             if distance < min_distance:
@@ -79,8 +78,8 @@ class TextMatcher:
                 "i2": i2,        # End index in template text
                 "j1": j1,        # Start index in OCR text
                 "j2": j2,        # End index in OCR text
-                #"template_substr": template_text[i1:i2],
-                #"ocr_substr": ocr_text[j1:j2]
+                # "template_substr": template_text[i1:i2],
+                # "ocr_substr": ocr_text[j1:j2]
             })
 
         return serializable_opcodes
@@ -185,7 +184,7 @@ class TextMatcher:
                 break
         return result
 
-    def is_string_equal(self, text: str, ignore_texts: list) -> bool:
+    def is_string_list_equal(self, text: str, ignore_texts: list) -> bool:
         result = False
         for ignore_text in ignore_texts:
             result = text == ignore_text
