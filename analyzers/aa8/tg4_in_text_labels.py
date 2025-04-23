@@ -39,7 +39,9 @@ class TG4_IN_MRP_TEXT_Label(BaseLabelAnalyzer):
 
             static_string_left = [
                 "Commodity: Cellular Phone",
-                "Quantity:      1N      (Pixel 9a, Charging Cable, SIM Tool,",
+                "Quantity:",
+                "1N",
+                "(Pixel 9a, Charging Cable, SIM Tool,",
                 "Safety/Regulatory Booklet)",
                 "Manufactured by: Google LLC 1600 Amphitheatre",
                 "Parkway, Mountain View, CA 94043, USA",
@@ -74,6 +76,11 @@ class TG4_IN_MRP_TEXT_Label(BaseLabelAnalyzer):
 
             process_column(right_column, static_string_right,
                            text_matcher, analysis)
+
+            analysis['text'] = {
+                'left': static_string_left,
+                'right': static_string_right,
+            }
 
             return analysis
 

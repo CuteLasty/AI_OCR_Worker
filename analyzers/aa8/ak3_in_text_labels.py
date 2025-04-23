@@ -73,6 +73,11 @@ class AK3_IN_MRP_128G_TEXT_Label(BaseLabelAnalyzer):
             process_column(right_column, static_string_right,
                            text_matcher, analysis)
 
+            analysis['text'].append({
+                "left": static_string_left,
+                "right": static_string_right,
+            })
+
             return analysis
 
         except Exception as e:
@@ -142,6 +147,11 @@ class AK3_IN_MRP_256G_TEXT_Label(BaseLabelAnalyzer):
 
             process_column(right_column, static_string_right,
                            text_matcher, analysis)
+
+            analysis['text'].append({
+                "left": static_string_left,
+                "right": static_string_right,
+            })
 
             return analysis
 
