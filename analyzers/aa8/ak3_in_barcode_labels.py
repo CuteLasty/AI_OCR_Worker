@@ -2,7 +2,7 @@ from loguru import logger
 
 from utils.text_utils import TextMatcher
 from analyzers.base_label_analyzer import BaseLabelAnalyzer
-from analyzers.aa8.date_str_utils import generate_YMDD
+from analyzers.aa8.date_str_utils import *
 from analyzers.aa8.analyzer_utils import *
 
 
