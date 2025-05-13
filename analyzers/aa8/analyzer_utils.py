@@ -1,6 +1,7 @@
 """
 條碼分析相關的獨立功能函數
 """
+from enum import Enum
 from loguru import logger
 
 from analyzers.utils import create_analyze_result
@@ -273,7 +274,6 @@ def process_ignore_str_type2(ocr_results: dict, ignore_x: int, ignore_y: int, bb
         ignore_x: 忽略區域X座標
         ignore_y: 忽略區域Y座標
         bbox_index: 邊界角落. 0: 左上, 1: 右上, 2: 右下, 3: 左下
-        analysis: 分析結果字典
 
     Returns:
         list: 未處理的 OCR 結果
@@ -360,3 +360,48 @@ def get_y_pos_by_text(ocr_results, text):
             y_pos = bbox[0][1] + ((bbox[3][1] - bbox[0][1])/2)
             return int(y_pos)
     return None
+
+
+class Direction(Enum):
+    UPPER_RIGHT = 1
+    UPPER_LEFT = 2
+    LOWER_RIGHT = 3
+    LOWER_LEFT = 4
+
+
+def process_region_str(ocr_results: dict, region_str_list: list, region_x: int, region_y: int,
+                       direction: Direction, bbox_index: int, analysis: dict) -> list:
+    """處理忽略區域的字串
+
+    Args:
+        ocr_results: OCR 識別結果列表
+        region_x: 區域X座標
+        region_y: 區域Y座標
+        direction: 選擇區域. UPPER_RIGHT: 右上, UPPER_LEFT: 左上, LOWER_RIGHT: 右下, LOWER_LEFT: 左下
+        bbox_index: 選擇bbox座標. 0: 左上, 1: 右上, 2: 右下, 3: 左下
+
+    Returns:
+        list: 未處理的 OCR 結果
+    """
+    index = 0
+    ocr_results_copy = []
+
+    # 忽略所有印刷區域文字
+    for ocr_result in ocr_results:
+        bbox = ocr_result['positions'][bbox_index]  # OCR bounding box
+        if (direction == Direction.UPPER_RIGHT and bbox[0] > region_x and bbox[1] < region_y) or \
+            (direction == Direction.UPPER_LEFT and bbox[0] < region_x and bbox[1] < region_y) or \
+            (direction == Direction.LOWER_RIGHT and bbox[0] > region_x and bbox[1] > region_y) or \
+                (direction == Direction.LOWER_LEFT and bbox[0] < region_x and bbox[1] > region_y):
+            text = ocr_result['text']
+            bbox = ocr_result['positions']
+            confidence = ocr_result['confidence']
+
+            analyze_result = create_analyze_result(
+                bbox, text, confidence, (text == region_str_list[index]))
+            analysis['results'].append(analyze_result)
+            index += 1
+        else:
+            ocr_results_copy.append(ocr_result)
+
+    return ocr_results_copy

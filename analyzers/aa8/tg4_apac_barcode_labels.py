@@ -54,8 +54,10 @@ class TG4_APAC_Retail_Label(BaseLabelAnalyzer):
             # 處理忽略區域
             ignore_x = int(image_width*0.5)
             ignore_y = int(image_height*0.4)
-            ocr_results_copy = process_ignore_str_type2(
-                ocr_results, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type2(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.UPPER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.2)
@@ -125,15 +127,17 @@ class TG4_DEMO_APAC_Retail_Label(BaseLabelAnalyzer):
 
             ignore_string = [
                 "進口商：台灣大哥大股份有限公司",
-                "地址：110鑫北市信義區煙廠路88號12楼",
+                "地址：110臺北市信義區煙廠路88號12楼",
                 "服務電話：(02)6638-6888",
             ]
 
             # 處理忽略區域
             ignore_x = int(image_width*0.5)
             ignore_y = int(image_height*0.35)
-            ocr_results_copy = process_ignore_str_type2(
-                ocr_results, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type2(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.UPPER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.2)
