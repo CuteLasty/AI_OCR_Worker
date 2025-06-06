@@ -65,8 +65,10 @@ class TG4_EMEA_Retail_Label(BaseLabelAnalyzer):
             # 處理忽略區域
             ignore_x = int(image_width*0.45)
             ignore_y = 0
-            ocr_results_copy = process_ignore_str_type1(
-                ocr_results, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type1(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.LOWER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.2)
@@ -150,15 +152,17 @@ class TG4_DEMO_EMEA_Retail_Label(BaseLabelAnalyzer):
             # 處理忽略區域
             ignore_x = int(image_width*0.45)
             ignore_y = 0
-            ocr_results_copy1 = process_ignore_str_type1(
-                ocr_results_copy, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type1(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.LOWER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.2)
             date_str_y = int(image_height*0.2)
             date_str_YMDD = generate_YMDD()
             ocr_results_copy2 = process_date_str2(
-                ocr_results_copy1, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
+                ocr_results_copy, date_str_YMDD, date_str_x, date_str_y, 0, analysis)
 
             # 處理開頭字串和數字
             remaining_results = process_starting_strings_and_digits(

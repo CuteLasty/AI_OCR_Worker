@@ -4,8 +4,8 @@ import shutil
 from pathlib import Path
 from loguru import logger
 
-from .ocr_model import OCRModel
 from .yolo_model import YoloModel
+from .ocr_model import OCRModel
 # from analyzers.barcode_analyzer import BarcodeAnalyzer
 # from analyzers.text_analyzer import TextAnalyzer
 

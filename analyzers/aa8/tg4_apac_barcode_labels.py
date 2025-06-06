@@ -79,11 +79,8 @@ class TG4_APAC_Retail_Label(BaseLabelAnalyzer):
                 ocr_results_copy2, starting_string, text_matcher, analysis)
 
             # 如果需要進一步處理剩餘結果，可以在這裡添加
-
-            # 確定整體匹配
             # analysis['match'] = all(result['match'] for result in analysis['results'])
             # logger.info(f"條碼分析完成，整體匹配: {analysis['match']}")
-
             return analysis
 
         except Exception as e:

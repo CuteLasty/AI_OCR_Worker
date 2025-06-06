@@ -12,7 +12,7 @@ YOLO_MODEL_PATH = 'best.pt'
 
 # OCR配置
 OCR_LANG = 'ch'
-USE_GPU = True
+USE_GPU = False
 DET_DB_THRESH = 0.3
 DET_DB_BOX_THRESH = 0.5
 DROP_SCORE = 0.5

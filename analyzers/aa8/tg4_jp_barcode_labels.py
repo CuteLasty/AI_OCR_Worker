@@ -54,8 +54,10 @@ class TG4_JP_Retail_Label(BaseLabelAnalyzer):
             # 處理忽略區域
             ignore_x = int(image_width*0.7)
             ignore_y = int(image_height*0.5)
-            ocr_results_copy = process_ignore_str_type1(
-                ocr_results, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type1(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.LOWER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.3)
@@ -123,8 +125,10 @@ class TG4_DEMO_JP_Retail_Label(BaseLabelAnalyzer):
             # 處理忽略區域
             ignore_x = int(image_width*0.7)
             ignore_y = int(image_height*0.5)
-            ocr_results_copy = process_ignore_str_type1(
-                ocr_results, ignore_x, ignore_y, 0)
+            # ocr_results_copy = process_ignore_str_type1(
+            #    ocr_results, ignore_x, ignore_y, 0)
+            ocr_results_copy = process_region_str(
+                ocr_results, ignore_string, ignore_x, ignore_y, Direction.LOWER_RIGHT, 0, analysis)
 
             # 處理YMDD日期標籤
             date_str_x = int(image_width*0.3)
