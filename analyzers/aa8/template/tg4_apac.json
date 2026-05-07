@@ -1,0 +1,83 @@
+{
+    "project_name": "TG4",
+    "sku_list": [
+        {
+            "sku": "sku": "GA05769-AU",
+            "upc": "upc": "840353922280",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09563-AU",
+            "upc": "840353922334",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09565-AU",
+            "upc": "840353922440",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09564-AU",
+            "upc": "840353922389",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09566-AU",
+            "upc": "840353922495",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09585-AU",
+            "upc": "840353922549",
+            "mcode": ""
+        },
+        {
+            "sku": "GA05769-AU-N",
+            "upc": "840353922822",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09563-AU-N",
+            "upc": "840353922877",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09564-AU-N",
+            "upc": "840353922921",
+            "mcode": ""
+        },
+        {
+            "sku": "GA09565-AU-N",
+            "upc": "840353922976",
+            "mcode": ""
+        }
+    ],
+    "compare_fields": [
+        {
+            "field": "Torque",
+            "type": "float",
+            "tolerance": 0.5,
+            "unit": "Nm",
+            "required": true
+        },
+        {
+            "field": "Angle",
+            "type": "float",
+            "tolerance": 2,
+            "unit": "deg",
+            "required": false
+        },
+        {
+            "field": "Speed",
+            "type": "int",
+            "tolerance": 10,
+            "unit": "rpm",
+            "required": false
+        }
+    ],
+    "metadata": {
+        "version": "1.0",
+        "create_time": "2025-11-17T10:00:00",
+        "author": "user"
+    }
+}
